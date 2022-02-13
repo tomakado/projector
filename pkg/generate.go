@@ -149,7 +149,7 @@ func (g *generator) readTplFileFromEmbeddedFS(fs *embed.FS, path string) ([]byte
 }
 
 func (g *generator) readTplFileFromOS(path string) ([]byte, error) {
-	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	f, err := os.OpenFile(filepath.Join(g.config.ManifestPath, path), os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open template file %q: %w", path, err)
 	}

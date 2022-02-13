@@ -7,4 +7,5 @@ type Config struct {
 	ProjectName      string
 	ProjectPackage   string
 	Manifest         *TemplateManifest
+	ManifestPath     string
 }

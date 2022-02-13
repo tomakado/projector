@@ -3,6 +3,9 @@ package cmd
 import (
 	"embed"
 	"fmt"
+	"os"
+	"os/user"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
@@ -12,10 +15,11 @@ import (
 var (
 	createCmd = &cobra.Command{
 		Use:  "create",
-		Args: cobra.ExactArgs(2),
+		Args: cobra.MinimumNArgs(1),
 		RunE: createE,
 	}
-	cfg projector.Config
+	cfg            projector.Config
+	pathToManifest string
 )
 
 //go:embed resources/*
@@ -23,32 +27,83 @@ var resources embed.FS
 
 func init() {
 	createCmd.Flags().StringVarP(&cfg.ProjectName, "name", "n", "my-app", "project name")
-	createCmd.Flags().StringVarP(&cfg.ProjectPackage, "package", "p", "", "project's module name")
-	createCmd.Flags().StringVarP(&cfg.ProjectAuthor, "author", "a", "anonymous", "project author") // TODO: use OS username by default!
+	createCmd.Flags().StringVarP(
+		&cfg.ProjectPackage,
+		"package",
+		"p",
+		"",
+		"project's module name (default same as project name)",
+	)
+	createCmd.Flags().StringVarP(&cfg.ProjectAuthor, "author", "a", "", "project author (default current OS user)")
+	createCmd.Flags().StringVarP(&pathToManifest, "file", "f", "", "path to custom template manifest")
 }
 
 func createE(_ *cobra.Command, args []string) error {
-	var (
-		templateName    = args[0]
-		tplManifestPath = fmt.Sprintf("resources/templates/%s/projector.toml", templateName)
-	)
-
-	tplManifestBytes, err := resources.ReadFile(tplManifestPath)
-	if err != nil {
-		return fmt.Errorf("failed to read manifest of project template %q: %w", templateName, err)
+	if pathToManifest != "" {
+		fillConfigForCustomManifest(pathToManifest)
+		cfg.WorkingDirectory = args[0]
+	} else {
+		fillConfigForEmbeddedManifest(args[0], args[1])
+		cfg.WorkingDirectory = args[1]
 	}
-
-	var tplManifest *projector.TemplateManifest
-	if err := toml.Unmarshal(tplManifestBytes, &tplManifest); err != nil {
-		return fmt.Errorf("failed to parse manifest of project template %q: %w", templateName, err)
-	}
-
-	cfg.WorkingDirectory = args[1]
-	cfg.Manifest = tplManifest.WithEmbeddedFS(&resources)
 
 	if cfg.ProjectPackage == "" {
 		cfg.ProjectPackage = cfg.ProjectName
 	}
 
+	if cfg.ProjectAuthor == "" {
+		u, err := user.Current()
+		if err != nil {
+			return fmt.Errorf("failed to get current user: %w", err)
+		}
+
+		cfg.ProjectAuthor = u.Name
+	}
+
 	return projector.Generate(&cfg)
+}
+
+func fillConfigForCustomManifest(path string) error {
+	manifestBytes, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read manifest of custom project template: %w", err)
+	}
+
+	manifest, err := parseManifest(manifestBytes)
+	if err != nil {
+		return err
+	}
+
+	cfg.Manifest = manifest
+	cfg.ManifestPath = filepath.Dir(path)
+
+	return nil
+}
+
+func fillConfigForEmbeddedManifest(templateName, workingDirectory string) error {
+	embedManifestPath := fmt.Sprintf("resources/templates/%s/projector.toml", templateName)
+
+	manifestBytes, err := resources.ReadFile(embedManifestPath)
+	if err != nil {
+		return fmt.Errorf("failed to read manifest of project template %q: %w", templateName, err)
+	}
+
+	manifest, err := parseManifest(manifestBytes)
+	if err != nil {
+		return err
+	}
+
+	cfg.Manifest = manifest.WithEmbeddedFS(&resources)
+	cfg.ManifestPath = filepath.Dir(embedManifestPath)
+
+	return nil
+}
+
+func parseManifest(src []byte) (*projector.TemplateManifest, error) {
+	var manifest *projector.TemplateManifest
+	if err := toml.Unmarshal(src, &manifest); err != nil {
+		return nil, fmt.Errorf("failed to parse manifest of project template: %w", err)
+	}
+
+	return manifest, nil
 }
