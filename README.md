@@ -7,3 +7,4 @@ Projector has some builtin templates, but you also can use your custom templates
 
 * Import third-party templates from GitHub
 * Import third-party templates from any public or private git repository
+* Verbose mode (for debug purposes)
