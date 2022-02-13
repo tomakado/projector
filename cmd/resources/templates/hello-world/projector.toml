@@ -1,0 +1,17 @@
+name="hello-world"
+author="defer panic"
+version="1.0.0"
+url="https://github.com/defer-panic"
+
+[[steps]]
+name="init go module and git repository"
+shell="go mod init {{ .ProjectPackage }} && git init"
+	[[steps.files]]
+	path="gitignore"
+	output=".gitignore"
+	
+[[steps]]
+name="create project bootstrap"
+	[[steps.files]]
+	path="main.go.tpl"
+	output="main.go"
