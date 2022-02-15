@@ -5,7 +5,8 @@ Projector has some builtin templates, but you also can use your custom templates
 
 # Features to implement
 
-- [ ] Template validation
+- [ ] Manifest validation (+ with full validation with text/template syntax check)
+- [ ] Template for templates!
 - [ ] User-friendly error messages
 - [ ] De-couple template sources and generator (by using interfaces)
 - [ ] Import third-party templates from GitHub

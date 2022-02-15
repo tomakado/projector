@@ -40,12 +40,17 @@ func init() {
 }
 
 func createE(_ *cobra.Command, args []string) error {
+	var fillErr error
 	if pathToManifest != "" {
-		fillConfigForCustomManifest(pathToManifest)
+		fillErr = fillConfigForCustomManifest(pathToManifest)
 		cfg.WorkingDirectory = args[0]
 	} else {
-		fillConfigForEmbeddedManifest(args[0], args[1])
+		fillErr = fillConfigForEmbeddedManifest(args[0], args[1])
 		cfg.WorkingDirectory = args[1]
+	}
+
+	if fillErr != nil {
+		return fillErr
 	}
 
 	if cfg.ProjectPackage == "" {
@@ -55,7 +60,8 @@ func createE(_ *cobra.Command, args []string) error {
 	if cfg.ProjectAuthor == "" {
 		u, err := user.Current()
 		if err != nil {
-			return fmt.Errorf("failed to get current user: %w", err)
+			// TODO wrap custom typed error (if possible)
+			return fmt.Errorf("get current user: %w", err)
 		}
 
 		cfg.ProjectAuthor = u.Name
@@ -67,11 +73,16 @@ func createE(_ *cobra.Command, args []string) error {
 func fillConfigForCustomManifest(path string) error {
 	manifestBytes, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("failed to read manifest of custom project template: %w", err)
+		// TODO wrap custom typed error
+		return fmt.Errorf("read custom manifest: %w", err)
 	}
 
 	manifest, err := parseManifest(manifestBytes)
 	if err != nil {
+		return err
+	}
+
+	if err := manifest.Validate(); err != nil {
 		return err
 	}
 
@@ -86,12 +97,17 @@ func fillConfigForEmbeddedManifest(templateName, workingDirectory string) error 
 
 	manifestBytes, err := resources.ReadFile(embedManifestPath)
 	if err != nil {
-		return fmt.Errorf("failed to read manifest of project template %q: %w", templateName, err)
+		// TODO wrap custom typed error
+		return fmt.Errorf("read manifest%q: %w", templateName, err)
 	}
 
 	manifest, err := parseManifest(manifestBytes)
 	if err != nil {
 		return err
+	}
+
+	if err := manifest.Validate(); err != nil {
+		return fmt.Errorf("manifest validation: %w", err)
 	}
 
 	cfg.Manifest = manifest.WithEmbeddedFS(&resources)
@@ -103,7 +119,8 @@ func fillConfigForEmbeddedManifest(templateName, workingDirectory string) error 
 func parseManifest(src []byte) (*manifest.Manifest, error) {
 	var manifest *manifest.Manifest
 	if err := toml.Unmarshal(src, &manifest); err != nil {
-		return nil, fmt.Errorf("failed to parse manifest of project template: %w", err)
+		// TODO wrap custom typed error
+		return nil, fmt.Errorf("parse manifest: %w", err)
 	}
 
 	return manifest, nil
