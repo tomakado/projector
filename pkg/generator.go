@@ -63,7 +63,7 @@ func (g *Generator) Generate() error {
 		}
 
 		if strings.TrimSpace(step.Shell) != "" {
-			if err := g.runShell(step.Shell); err != nil {
+			if err := g.RunShell(step.Shell); err != nil {
 				return fmt.Errorf(
 					"[step %q, %d of %d] run shell: %w",
 					step.Name,
@@ -133,7 +133,7 @@ func (g *Generator) saveGeneratedFile(fileManifest manifest.File, data []byte) e
 	return nil
 }
 
-func (g *Generator) runShell(rawSh string) error {
+func (g *Generator) RunShell(rawSh string) error {
 	t, err := template.New("sh").Parse(rawSh)
 	if err != nil {
 		// TODO wrap custom typed error (if possible)

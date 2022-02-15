@@ -1,0 +1,11 @@
+FROM golang:1.16
+
+WORKDIR /app-tests/
+
+RUN apt-get update && apt-get install -y build-essential
+
+ADD pkg/ pkg/
+ADD cmd/ cmd/
+ADD go.mod go.sum main.go Makefile ./
+
+CMD ["make", "test-coverage"]

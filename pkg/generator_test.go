@@ -50,7 +50,18 @@ func TestGenerator_RenderOutputPath(t *testing.T) {
 				Path:   "loader.js",
 				Output: "src/core/{{ .ProjectName }-loader.js",
 			},
-			expected: "/home/user/dev/the-best-app/src/core/the-best-app-loader.js",
+		},
+		{
+			name:    "empty output path template",
+			isValid: false,
+			cfg: &projector.Config{
+				ProjectName:      "the-best-app",
+				WorkingDirectory: "/home/user/dev/the-best-app",
+			},
+			file: manifest.File{
+				Path:   "loader.js",
+				Output: `{{uppercase .ProjectName }}`,
+			},
 		},
 	}
 
@@ -95,8 +106,11 @@ func TestGenerator_ExtractTemplateFrom(t *testing.T) {
 		tc := testCase
 		t.Run(tc.name, func(t *testing.T) {
 			var (
-				provider  = manifest.NewEmbedFSProvider(&embeddedTestData, "testdata/embed/")
-				generator = projector.NewGenerator(nil, provider)
+				provider = manifest.NewEmbedFSProvider(&embeddedTestData, "testdata/embed/")
+				cfg      = &projector.Config{
+					Manifest: &manifest.Manifest{Name: "generator"},
+				}
+				generator = projector.NewGenerator(cfg, provider)
 			)
 
 			tpl, err := generator.ExtractTemplateFrom(tc.filename)
@@ -104,10 +118,53 @@ func TestGenerator_ExtractTemplateFrom(t *testing.T) {
 			if tc.isValid {
 				require.NoError(t, err)
 				require.NotNil(t, tpl)
-			} else {
-				require.Error(t, err)
-				require.Nil(t, tpl)
+				return
 			}
+
+			require.Error(t, err)
+			require.Nil(t, tpl)
+		})
+	}
+}
+
+func TestGenerator_RunShell(t *testing.T) {
+	type testCase struct {
+		name        string
+		isValid     bool
+		shellScript string
+	}
+
+	testCases := []testCase{
+		{
+			name:        "all right, no output captured",
+			isValid:     true,
+			shellScript: "date",
+		},
+		{
+			name:        "exit code 1",
+			isValid:     false,
+			shellScript: "datee",
+		},
+		{
+			name:        "invalid shell script template syntax",
+			isValid:     false,
+			shellScript: "go mod init {{ .ProjectName }",
+		},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			generator := projector.NewGenerator(nil, nil)
+
+			err := generator.RunShell(tc.shellScript)
+
+			if tc.isValid {
+				require.NoError(t, err)
+				return
+			}
+
+			require.Error(t, err)
 		})
 	}
 }
