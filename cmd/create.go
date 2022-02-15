@@ -10,6 +10,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 	projector "github.com/tomakado/projector/pkg"
+	"github.com/tomakado/projector/pkg/manifest"
 )
 
 var (
@@ -99,8 +100,8 @@ func fillConfigForEmbeddedManifest(templateName, workingDirectory string) error 
 	return nil
 }
 
-func parseManifest(src []byte) (*projector.TemplateManifest, error) {
-	var manifest *projector.TemplateManifest
+func parseManifest(src []byte) (*manifest.Manifest, error) {
+	var manifest *manifest.Manifest
 	if err := toml.Unmarshal(src, &manifest); err != nil {
 		return nil, fmt.Errorf("failed to parse manifest of project template: %w", err)
 	}

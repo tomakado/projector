@@ -5,6 +5,13 @@ Projector has some builtin templates, but you also can use your custom templates
 
 # Features to implement
 
-* Import third-party templates from GitHub
-* Import third-party templates from any public or private git repository
-* Verbose mode (for debug purposes)
+- [ ] Template validation
+- [ ] User-friendly error messages
+- [ ] De-couple template sources and generator (by using interfaces)
+- [ ] Import third-party templates from GitHub
+- [ ] Custom options in template context
+- [ ] Import third-party templates from any public or private git repository
+- [ ] Template caching
+- [ ] List builtin and local third-party cached templates
+- [ ] Verbose mode (for debug purposes)
+- [ ] Support for file masks on input files declaration
