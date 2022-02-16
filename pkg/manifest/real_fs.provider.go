@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 )
 
+// RealFSProvider is an wrapper for file system that provides
+// implementation of provider interface accepted by projector.Generator.
 type RealFSProvider struct {
 	root string
 }
@@ -33,7 +35,7 @@ func (r *RealFSProvider) Get(filename string) ([]byte, error) {
 
 		return nil, fmt.Errorf("open %q: %w", fullPath, errToWrap)
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	bts, err := io.ReadAll(f)
 	if err != nil {

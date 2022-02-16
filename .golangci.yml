@@ -1,0 +1,9 @@
+run:
+  timeout: 3m
+    
+linters-settings:
+  revive:
+    rules:
+      - name: line-length-limit
+        severity: error
+        arguments: [119]

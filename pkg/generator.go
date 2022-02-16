@@ -21,6 +21,7 @@ func Generate(config *Config, provider provider) error {
 	return NewGenerator(config, provider).Generate()
 }
 
+// Generator couples generation task and file provider into unite context to create project.
 type Generator struct {
 	config   *Config
 	provider provider
@@ -33,6 +34,7 @@ func NewGenerator(config *Config, provider provider) *Generator {
 	}
 }
 
+// Generate traverses steps in project template manifest and performs actions defined inside each of them.
 func (g *Generator) Generate() error {
 	if err := os.MkdirAll(g.config.WorkingDirectory, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to mkdir %q: %w", g.config.WorkingDirectory, err)
@@ -91,6 +93,7 @@ func (g *Generator) generateFiles(files []manifest.File) error {
 	return nil
 }
 
+// ExtractTemplateFrom reads plain text from specified file and tries to parse it as text/template syntax.
 func (g *Generator) ExtractTemplateFrom(filename string) (*template.Template, error) {
 	tplBytes, err := g.provider.Get(filepath.Join(g.config.Manifest.Name, filename))
 	if err != nil {
@@ -126,6 +129,7 @@ func (g *Generator) saveGeneratedFile(fileManifest manifest.File, data []byte) e
 	return nil
 }
 
+// RunShell renders passed raw shell script template into actual shell script and then executes it.
 func (g *Generator) RunShell(rawSh string) error {
 	t, err := template.New("sh").Parse(rawSh)
 	if err != nil {
@@ -134,7 +138,9 @@ func (g *Generator) RunShell(rawSh string) error {
 	}
 
 	var sh strings.Builder
-	t.Execute(&sh, g.config)
+	if err := t.Execute(&sh, g.config); err != nil {
+		return fmt.Errorf("render shell script: %w", err)
+	}
 
 	output, err := exec.Command("sh", "-c", sh.String()).CombinedOutput()
 	if err != nil {
@@ -146,6 +152,7 @@ func (g *Generator) RunShell(rawSh string) error {
 	return nil
 }
 
+// RenderOutputPath renders output path for passed file from raw output path template.
 func (g *Generator) RenderOutputPath(f manifest.File) (string, error) {
 	t, err := template.New(f.Output).Parse(f.Output)
 	if err != nil {

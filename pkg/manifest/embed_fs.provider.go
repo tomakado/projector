@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 )
 
+// EmbedFSProvider is an wrapper for embed.FS that provides
+// implementation of provider interface accepted by projector.Generator.
 type EmbedFSProvider struct {
 	fs   *embed.FS
 	root string
@@ -29,7 +31,7 @@ func (e *EmbedFSProvider) Get(filename string) ([]byte, error) {
 		}
 		return nil, fmt.Errorf("open %q: %w", filename, err)
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	bts, err := io.ReadAll(f)
 	if err != nil {
