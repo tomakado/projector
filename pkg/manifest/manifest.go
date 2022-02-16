@@ -3,6 +3,7 @@ package manifest
 import (
 	"embed"
 	"fmt"
+	"text/template"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
@@ -77,7 +78,24 @@ func (s Step) Validate() error {
 		}
 	}
 
+	if err := s.validateShellScript(); err != nil {
+		result = multierror.Append(result, fmt.Errorf("  Shell: %w", err))
+	}
+
 	return result
+}
+
+func (s *Step) validateShellScript() error {
+	if s.Shell == "" {
+		return nil
+	}
+
+	_, err := template.New(s.Shell).Parse(s.Shell)
+	if err != nil {
+		return fmt.Errorf("parse shell script template: %w", err)
+	}
+
+	return nil
 }
 
 // File is actually mapping between template file and output file. Also template syntax allowed in Output field.
@@ -92,6 +110,21 @@ func (f File) Validate() error {
 		validation.Field(&f.Path, validation.Required),
 
 		// TODO validate text/template syntax
-		validation.Field(&f.Output, validation.Required),
+		validation.Field(
+			&f.Output,
+			validation.Required,
+			validation.By(validateOutputSyntax),
+		),
 	)
+
+}
+
+func validateOutputSyntax(v interface{}) error {
+	output := v.(string)
+	_, err := template.New(output).Parse(output)
+	if err != nil {
+		return fmt.Errorf("parse file output path template: %w", err)
+	}
+
+	return nil
 }

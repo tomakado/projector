@@ -17,15 +17,8 @@ type provider interface {
 }
 
 // Generate traverses template manifest passed inside config and executes listed steps with config passed as context.
-func Generate(config *Config) error {
-	var p provider
-	if config.Manifest.EmbeddedFS() != nil {
-		p = manifest.NewEmbedFSProvider(config.Manifest.EmbeddedFS(), "resources/templates/")
-	} else {
-		p = manifest.NewRealFSProvider(config.ManifestPath)
-	}
-
-	return NewGenerator(config, p).Generate()
+func Generate(config *Config, provider provider) error {
+	return NewGenerator(config, provider).Generate()
 }
 
 type Generator struct {
