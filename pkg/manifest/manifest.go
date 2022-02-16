@@ -15,7 +15,7 @@ type Manifest struct {
 	fs *embed.FS
 
 	Name    string `toml:"name"`
-	Author  string `toml:"author,omitempty"`
+	Author  string `toml:"author"`
 	URL     string `toml:"url,omitempty"`
 	Version string `toml:"version,omitempty"`
 
@@ -30,6 +30,11 @@ func (m Manifest) Validate() error {
 		validation.Field(&m.Name, validation.Required),
 		validation.Field(&m.Author, validation.Required),
 		validation.Field(&m.URL, is.URL),
+		validation.Field(
+			&m.Steps,
+			validation.Required,
+			validation.Length(1, 0),
+		),
 	); err != nil {
 		result = multierror.Append(result, err)
 	}
@@ -41,17 +46,6 @@ func (m Manifest) Validate() error {
 	}
 
 	return result
-}
-
-// EmbeddedFS returns reference to embedded filesystem this manifest belongs to.
-func (t *Manifest) EmbeddedFS() *embed.FS {
-	return t.fs
-}
-
-// WithEmbeddedFS writes fs to manifest and returns reference to manifest.
-func (t *Manifest) WithEmbeddedFS(fs *embed.FS) *Manifest {
-	t.fs = fs
-	return t
 }
 
 // Step contains template files to output mapping and/or shell script to execute.
@@ -70,6 +64,10 @@ func (s Step) Validate() error {
 		validation.Field(&s.Name, validation.Required),
 	); err != nil {
 		result = multierror.Append(result, err)
+	}
+
+	if s.Shell == "" && len(s.Files) == 0 {
+		return fmt.Errorf("either Shell or File must be specified")
 	}
 
 	for i, f := range s.Files {

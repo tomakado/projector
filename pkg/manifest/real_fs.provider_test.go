@@ -19,6 +19,7 @@ func TestRealFSProvider_Get(t *testing.T) {
 		expectedContent string
 	}
 
+	// TODO add case for permission denied
 	testCases := []testCase{
 		{
 			name:            "file exists",
