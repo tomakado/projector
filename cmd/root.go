@@ -32,6 +32,7 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(infoCmd)
 }
 
 // Execute runs passed command and handles errors.

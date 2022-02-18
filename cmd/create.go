@@ -12,7 +12,7 @@ import (
 
 var (
 	createCmd = &cobra.Command{
-		Use:   "create",
+		Use:   "create [TEMPLATE]",
 		Short: "Create project using specified template",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  runCreate,

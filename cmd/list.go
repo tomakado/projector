@@ -3,10 +3,9 @@ package cmd
 import (
 	"fmt"
 	"path"
+	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/tomakado/projector/pkg/manifest"
 )
 
 var listCmd = &cobra.Command{
@@ -22,37 +21,24 @@ func runList(_ *cobra.Command, _ []string) error {
 	}
 
 	for _, m := range manifests {
-		color.New(color.FgGreen).Printf("%s@%s", m.Name, m.Version)
-		fmt.Printf(" by %s\n", m.Author)
-		if m.URL != "" {
-			color.New(color.FgWhite).Printf("%s\n\n", m.URL)
-		} else {
-			fmt.Println()
-		}
+		fmt.Println(m)
 	}
 
 	return nil
 }
 
-func collectManifests(root string) ([]manifest.Manifest, error) {
-	var manifests []manifest.Manifest
+func collectManifests(root string) ([]string, error) {
+	var manifests []string
 
 	dirs, err := resources.ReadDir(root)
 	if err != nil {
 		return nil, fmt.Errorf("read dir %q: %w", root, err)
 	}
 
-	p := manifest.NewEmbedFSProvider(&resources, root)
-
 	for _, entry := range dirs {
 		if !entry.IsDir() {
 			if entry.Name() == "projector.toml" {
-				m, err := loadManifest(p, "projector.toml")
-				if err != nil {
-					return nil, fmt.Errorf("load %q: %w", root, err)
-				}
-
-				manifests = append(manifests, *m)
+				manifests = append(manifests, strings.TrimLeft(root, embedRoot)) //nolint:staticcheck
 			}
 
 			continue

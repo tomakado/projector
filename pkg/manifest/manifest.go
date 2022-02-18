@@ -11,10 +11,11 @@ import (
 
 // Manifest contains all metadata related to project template and actual steps of project generation.
 type Manifest struct {
-	Name    string `toml:"name"`
-	Author  string `toml:"author"`
-	URL     string `toml:"url,omitempty"`
-	Version string `toml:"version"`
+	Name        string `toml:"name"`
+	Author      string `toml:"author"`
+	URL         string `toml:"url,omitempty"`
+	Version     string `toml:"version"`
+	Description string `toml:"description"`
 
 	Steps []Step `toml:"steps"`
 }

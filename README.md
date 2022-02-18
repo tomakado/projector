@@ -13,6 +13,9 @@ Projector has some builtin templates, but you also can use your custom templates
 - [ ] Custom options in template context
 - [ ] Import third-party templates from any public or private git repository
 - [ ] Template caching
-- [ ] List builtin and local third-party cached templates
+- [x] List builtin templates
+- [ ] List local third-party cached templates
+- [ ] Command for getting template meta information (name, author, version, URL)
 - [ ] Verbose mode (for debug purposes)
 - [ ] Support for file masks on input files declaration
+- [ ] `version` command (Go 1.18+)

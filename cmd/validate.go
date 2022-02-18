@@ -10,7 +10,7 @@ import (
 
 var (
 	validateCmd = &cobra.Command{
-		Use:   "validate",
+		Use:   "validate [TEMPLATE?]",
 		Short: "Validate manifest without performing actions (dry run)",
 		Args:  cobra.MaximumNArgs(1),
 		RunE:  runValidate,
