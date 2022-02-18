@@ -46,7 +46,7 @@ func (g *Generator) Generate() error {
 
 	for i, step := range g.config.Manifest.Steps {
 		if step.Files != nil {
-			if err := g.generateFiles(step.Files); err != nil {
+			if err := g.ProcessFiles(step.Files); err != nil {
 				return fmt.Errorf(
 					"[step %q, %d of %d] generate files: %w",
 					step.Name,
@@ -73,7 +73,7 @@ func (g *Generator) Generate() error {
 	return nil
 }
 
-func (g *Generator) generateFiles(files []manifest.File) error {
+func (g *Generator) ProcessFiles(files []manifest.File) error {
 	for _, file := range files {
 		t, err := g.ExtractTemplateFrom(file.Path)
 		if err != nil {
@@ -121,12 +121,31 @@ func (g *Generator) saveGeneratedFile(fileManifest manifest.File, data []byte) e
 		return fmt.Errorf("init dir %q: %w", pathDir, err)
 	}
 
+	fmt.Println(outputPath)
+
 	if err := os.WriteFile(outputPath, data, os.ModePerm); err != nil {
 		// TODO wrap custom typed error
 		return fmt.Errorf("write generated file to %q: %w", outputPath, err)
 	}
 
 	return nil
+}
+
+// RenderOutputPath renders output path for passed file from raw output path template.
+func (g *Generator) RenderOutputPath(f manifest.File) (string, error) {
+	t, err := template.New(f.Output).Parse(f.Output)
+	if err != nil {
+		// TODO wrap custom typed error
+		return "", fmt.Errorf("parse output path template %q: %w", f.Output, err)
+	}
+
+	var outputPath strings.Builder
+	if err := t.Execute(&outputPath, g.config); err != nil {
+		// TODO wrap custom typed error
+		return "", fmt.Errorf("render output path template %q: %w", f.Output, err)
+	}
+
+	return filepath.Join(g.config.WorkingDirectory, outputPath.String()), nil
 }
 
 // RunShell renders passed raw shell script template into actual shell script and then executes it.
@@ -150,21 +169,4 @@ func (g *Generator) RunShell(rawSh string) error {
 	}
 
 	return nil
-}
-
-// RenderOutputPath renders output path for passed file from raw output path template.
-func (g *Generator) RenderOutputPath(f manifest.File) (string, error) {
-	t, err := template.New(f.Output).Parse(f.Output)
-	if err != nil {
-		// TODO wrap custom typed error
-		return "", fmt.Errorf("parse output path template %q: %w", f.Output, err)
-	}
-
-	var outputPath strings.Builder
-	if err := t.Execute(&outputPath, g.config); err != nil {
-		// TODO wrap custom typed error
-		return "", fmt.Errorf("render output path template %q: %w", f.Output, err)
-	}
-
-	return filepath.Join(g.config.WorkingDirectory, outputPath.String()), nil
 }

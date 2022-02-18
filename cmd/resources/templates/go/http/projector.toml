@@ -1,4 +1,4 @@
-name="go/hello-world"
+name="go/http"
 author="tomakado"
 version="1.0.0"
 url="https://github.com/tomakado/projector"
@@ -11,7 +11,5 @@ shell="go mod init {{ .ProjectPackage }} && git init"
 	output=".gitignore"
 	
 [[steps]]
-name="create project bootstrap"
-	[[steps.files]]
-	path="main.go.tpl"
-	output="main.go"
+name="install chi router"
+shell="go get github.com/go-chi/chi/v5"

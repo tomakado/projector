@@ -2,7 +2,7 @@ test:
 	go test ./...
 
 test-coverage:
-	go test -coverprofile=coverage.out ./... && \
+	go test -v -coverprofile=coverage.out ./... && \
 	go tool cover -func=coverage.out
 
 lint:

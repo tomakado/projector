@@ -1,7 +1,6 @@
 package manifest
 
 import (
-	"embed"
 	"fmt"
 	"text/template"
 
@@ -12,12 +11,10 @@ import (
 
 // Manifest contains all metadata related to project template and actual steps of project generation.
 type Manifest struct {
-	fs *embed.FS
-
 	Name    string `toml:"name"`
 	Author  string `toml:"author"`
 	URL     string `toml:"url,omitempty"`
-	Version string `toml:"version,omitempty"`
+	Version string `toml:"version"`
 
 	Steps []Step `toml:"steps"`
 }
@@ -30,6 +27,7 @@ func (m Manifest) Validate() error {
 		validation.Field(&m.Name, validation.Required),
 		validation.Field(&m.Author, validation.Required),
 		validation.Field(&m.URL, is.URL),
+		validation.Field(&m.Version, validation.Required),
 		validation.Field(
 			&m.Steps,
 			validation.Required,

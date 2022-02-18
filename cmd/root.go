@@ -31,6 +31,7 @@ type provider interface {
 func init() {
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(validateCmd)
+	rootCmd.AddCommand(listCmd)
 }
 
 // Execute runs passed command and handles errors.

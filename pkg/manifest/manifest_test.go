@@ -140,7 +140,51 @@ func TestManifest_Validate(t *testing.T) {
 			name:    "valid manifest",
 			isValid: true,
 			manifest: manifest.Manifest{
-				Name:   "my-awesome-template",
+				Name:    "my-awesome-template",
+				Author:  "keanu.reeves@arasaka.net",
+				Version: "1.0.0",
+				Steps: []manifest.Step{
+					{
+						Name:  "some valid step",
+						Shell: "date",
+					},
+				},
+			},
+		},
+		{
+			name:    "name is not set",
+			isValid: false,
+			manifest: manifest.Manifest{
+				Name:    "",
+				Author:  "keanu.reeves@arasaka.net",
+				Version: "1.0.0",
+				Steps: []manifest.Step{
+					{
+						Name:  "some valid step",
+						Shell: "date",
+					},
+				},
+			},
+		},
+		{
+			name:    "author is not set",
+			isValid: false,
+			manifest: manifest.Manifest{
+				Name:    "anonymous-template",
+				Version: "1.0.0",
+				Steps: []manifest.Step{
+					{
+						Name:  "some valid step",
+						Shell: "date",
+					},
+				},
+			},
+		},
+		{
+			name:    "version is not set",
+			isValid: false,
+			manifest: manifest.Manifest{
+				Name:   "template-without-version",
 				Author: "keanu.reeves@arasaka.net",
 				Steps: []manifest.Step{
 					{
