@@ -1,3 +1,7 @@
+<p align="center">
+	<img src="doc/logo.png" />
+</p>
+
 # Projector
 
 A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
