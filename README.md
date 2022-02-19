@@ -1,8 +1,6 @@
-<p align="center">
-	<img src="doc/logo.png" />
-</p>
+[![Go Report Card](https://goreportcard.com/badge/github.com/tomakado/projector)](https://goreportcard.com/report/github.com/tomakado/projector) [![Coverage Status](https://coveralls.io/repos/github/tomakado/projector/badge.svg?branch=master)](https://coveralls.io/github/tomakado/projector?branch=master)
 
-# Projector
+<img src="doc/logo.png" align="right" /> 
 
 A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
 Projector has some builtin templates, but you also can use your custom templates.
