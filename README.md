@@ -7,6 +7,8 @@
 A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
 Projector has some builtin templates, but you also can use your custom templates.
 
+Currently Projector is in active development stage, therefore breaking changes may occur.
+
 # Features
 
 * Single binary, no extra dependencies
