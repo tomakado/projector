@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/tomakado/projector/internal/pkg/verbose"
 )
 
 // RealFSProvider is an wrapper for file system that provides
@@ -16,10 +18,13 @@ type RealFSProvider struct {
 }
 
 func NewRealFSProvider(root string) *RealFSProvider {
+	verbose.Println("initialized real fs provider")
 	return &RealFSProvider{root: root}
 }
 
 func (r *RealFSProvider) Get(filename string) ([]byte, error) {
+	verbose.Printf("[RealFSProvider] reading %q in %q", filename, r.root)
+
 	fullPath := filepath.Join(r.root, filename)
 
 	f, err := os.OpenFile(fullPath, os.O_RDONLY, os.ModePerm)

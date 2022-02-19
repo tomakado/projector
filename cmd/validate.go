@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/tomakado/projector/internal/pkg/verbose"
 	"github.com/tomakado/projector/pkg/manifest"
 )
 
@@ -25,11 +26,15 @@ func init() {
 func runValidate(_ *cobra.Command, args []string) error {
 	var p provider
 	if manifestNameToValidate == "" {
+		verbose.Println("manifest name is not passed from flag, trying to read from args")
+
 		if len(args) == 0 {
 			return fmt.Errorf("builtin manifest name as argument is required if path to manifest is not specified")
 		}
 
 		manifestNameToValidate = filepath.Join(args[0], "projector.toml")
+		verbose.Printf("using manifest name %q", manifestNameToValidate)
+
 		p = manifest.NewEmbedFSProvider(&resources, embedRoot)
 	} else {
 		p = manifest.NewRealFSProvider(filepath.Dir(manifestNameToValidate))

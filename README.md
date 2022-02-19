@@ -3,10 +3,11 @@
 A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
 Projector has some builtin templates, but you also can use your custom templates.
 
-# Features to implement
+# Backlog
 
 - [x] Manifest validation (+ with full validation with text/template syntax check)
 - [ ] Template for templates!
+- [ ] Nice animated output of current step
 - [ ] User-friendly error messages
 - [x] De-couple template sources and generator (by using interfaces)
 - [ ] Import third-party templates from GitHub
@@ -16,6 +17,6 @@ Projector has some builtin templates, but you also can use your custom templates
 - [x] List builtin templates
 - [ ] List local third-party cached templates
 - [ ] Command for getting template meta information (name, author, version, URL)
-- [ ] Verbose mode (for debug purposes)
+- [x] Verbose mode (for debug purposes)
 - [ ] Support for file masks on input files declaration
 - [ ] `version` command (Go 1.18+)

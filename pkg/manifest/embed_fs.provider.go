@@ -7,6 +7,8 @@ import (
 	"io"
 	"io/fs"
 	"path/filepath"
+
+	"github.com/tomakado/projector/internal/pkg/verbose"
 )
 
 // EmbedFSProvider is an wrapper for embed.FS that provides
@@ -17,6 +19,8 @@ type EmbedFSProvider struct {
 }
 
 func NewEmbedFSProvider(fs *embed.FS, root string) *EmbedFSProvider {
+	verbose.Println("initialized embedded fs provider")
+
 	return &EmbedFSProvider{
 		fs:   fs,
 		root: root,
@@ -24,6 +28,8 @@ func NewEmbedFSProvider(fs *embed.FS, root string) *EmbedFSProvider {
 }
 
 func (e *EmbedFSProvider) Get(filename string) ([]byte, error) {
+	verbose.Printf("[EmbedFSProvider] reading %q in %q", filename, e.root)
+
 	f, err := e.fs.Open(filepath.Join(e.root, filename))
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {

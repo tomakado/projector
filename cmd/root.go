@@ -7,19 +7,27 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
+	"github.com/tomakado/projector/internal/pkg/verbose"
 	"github.com/tomakado/projector/pkg/manifest"
 )
 
 const embedRoot = "resources/templates/"
 
-var rootCmd = &cobra.Command{
-	Use:   "projector",
-	Short: "Projector is a tool for generating project from templates",
-	Long: `A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
+var (
+	rootCmd = &cobra.Command{
+		Use:   "projector",
+		Short: "Projector is a tool for generating project from templates",
+		Long: `A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
 Projector has some builtin templates, but you can use your custom templates or import third-party templates
 from GitHub.`,
-	SilenceUsage: true,
-}
+		SilenceUsage: true,
+		PersistentPreRun: func(*cobra.Command, []string) {
+			verbose.SetVerboseOn(isVerboseOn)
+			verbose.Println("verbose mode is turned on")
+		},
+	}
+	isVerboseOn bool
+)
 
 //go:embed resources/*
 var resources embed.FS
@@ -29,6 +37,8 @@ type provider interface {
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVarP(&isVerboseOn, "verbose", "v", false, "turn verbose mode on")
+
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(listCmd)
@@ -43,6 +53,8 @@ func Execute() {
 }
 
 func loadManifest(p provider, path string) (*manifest.Manifest, error) {
+	verbose.Printf("loading manifest %q", path)
+
 	manifestBytes, err := p.Get(path)
 	if err != nil {
 		return nil, err
@@ -61,9 +73,12 @@ func loadManifest(p provider, path string) (*manifest.Manifest, error) {
 }
 
 func parseManifest(src []byte) (*manifest.Manifest, error) {
+	verbose.Println("parsing manifest")
+
 	var manifest *manifest.Manifest
 	if err := toml.Unmarshal(src, &manifest); err != nil {
 		// TODO wrap custom typed error
+		verbose.Println("toml.Unmarshal returned error")
 		return nil, fmt.Errorf("parse manifest: %w", err)
 	}
 

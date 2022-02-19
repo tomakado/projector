@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/tomakado/projector/internal/pkg/verbose"
 )
 
 var listCmd = &cobra.Command{
@@ -15,6 +16,8 @@ var listCmd = &cobra.Command{
 }
 
 func runList(_ *cobra.Command, _ []string) error {
+	verbose.Println("traversing templates tree")
+
 	manifests, err := collectManifests(".")
 	if err != nil {
 		return fmt.Errorf("collect manifests: %w", err)
@@ -28,6 +31,8 @@ func runList(_ *cobra.Command, _ []string) error {
 }
 
 func collectManifests(root string) ([]string, error) {
+	verbose.Printf("reading %q", root)
+
 	var manifests []string
 
 	dirs, err := resources.ReadDir(root)
@@ -39,6 +44,8 @@ func collectManifests(root string) ([]string, error) {
 		if !entry.IsDir() {
 			if entry.Name() == "projector.toml" {
 				manifests = append(manifests, strings.TrimLeft(root, embedRoot)) //nolint:staticcheck
+
+				verbose.Printf("projector.toml detected, so registered %q as manifest", root)
 			}
 
 			continue

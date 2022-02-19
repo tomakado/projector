@@ -7,6 +7,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/hashicorp/go-multierror"
+	"github.com/tomakado/projector/internal/pkg/verbose"
 )
 
 // Manifest contains all metadata related to project template and actual steps of project generation.
@@ -21,6 +22,7 @@ type Manifest struct {
 }
 
 func (m Manifest) Validate() error {
+	verbose.Println("validating manifest")
 	var result error
 
 	if err := validation.ValidateStruct(

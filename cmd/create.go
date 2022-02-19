@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"github.com/tomakado/projector/internal/pkg/verbose"
 	projector "github.com/tomakado/projector/pkg"
 	"github.com/tomakado/projector/pkg/manifest"
 )
@@ -37,14 +38,19 @@ func init() {
 func runCreate(_ *cobra.Command, args []string) error {
 	var p provider
 	if pathToManifest != "" {
+		verbose.Printf("custom manifest filename passed: %q", pathToManifest)
 		p = manifest.NewRealFSProvider(filepath.Dir(pathToManifest))
 		cfg.WorkingDirectory = args[0]
 	} else {
+		pathToManifest = args[0]
+		verbose.Printf("using manifest name %q in embed fs", pathToManifest)
 		p = manifest.NewEmbedFSProvider(&resources, embedRoot)
 		cfg.WorkingDirectory = args[1]
 	}
 
-	manifest, err := loadManifest(p, pathToManifest)
+	verbose.Printf("working directory = %q", cfg.WorkingDirectory)
+
+	manifest, err := loadManifest(p, filepath.Join(pathToManifest, "projector.toml"))
 	if err != nil {
 		return fmt.Errorf("load manifest: %w", err)
 	}
@@ -54,6 +60,11 @@ func runCreate(_ *cobra.Command, args []string) error {
 
 	if cfg.ProjectPackage == "" {
 		cfg.ProjectPackage = cfg.ProjectName
+
+		verbose.Printf(
+			"project package name is not provided, using project name as package name (%q)",
+			cfg.ProjectPackage,
+		)
 	}
 
 	if cfg.ProjectAuthor == "" {
@@ -64,6 +75,8 @@ func runCreate(_ *cobra.Command, args []string) error {
 		}
 
 		cfg.ProjectAuthor = u.Name
+
+		verbose.Printf("project author is not provided, using current OS user as author (%q)", cfg.ProjectAuthor)
 	}
 
 	return projector.Generate(&cfg, p)
