@@ -1,4 +1,7 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/tomakado/projector)](https://goreportcard.com/report/github.com/tomakado/projector) [![Coverage Status](https://coveralls.io/repos/github/tomakado/projector/badge.svg?branch=master)](https://coveralls.io/github/tomakado/projector?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tomakado/projector)](https://goreportcard.com/report/github.com/tomakado/projector)
+[![Coverage Status](https://coveralls.io/repos/github/tomakado/projector/badge.svg?branch=master)](https://coveralls.io/github/tomakado/projector?branch=master)
+![License](https://img.shields.io/badge/license-MIT-green)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/tomakado/projector)
 
 <img src="doc/logo.png" align="right" /> 
 
