@@ -13,3 +13,12 @@ shell="go mod init {{ .ProjectPackage }} && git init"
 [[steps]]
 name="install chi router"
 shell="go get github.com/go-chi/chi/v5"
+
+[[steps]]
+name="create basic http server"
+	[[steps.files]]
+	path="cmd/main.go.tpl"
+	output="cmd/main.go"
+	[[steps.files]]
+	path="Makefile"
+	output="Makefile"
