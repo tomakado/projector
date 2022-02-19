@@ -2,8 +2,15 @@ package projector_test
 
 import (
 	"embed"
+	"fmt"
+	"log"
+	"os"
+	"runtime"
+	"strings"
 	"testing"
 
+	"github.com/BurntSushi/toml"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	projector "github.com/tomakado/projector/pkg"
 	"github.com/tomakado/projector/pkg/manifest"
@@ -15,6 +22,17 @@ var embeddedTestData embed.FS
 type noOpProvider struct{}
 
 func (*noOpProvider) Get(filename string) ([]byte, error) { return nil, nil }
+
+func TestMain(m *testing.M) {
+	exitCode := m.Run()
+
+	if err := os.RemoveAll("testdata/output/"); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	os.Exit(exitCode)
+}
 
 func TestGenerator_RenderOutputPath(t *testing.T) {
 	type testCase struct {
@@ -37,7 +55,7 @@ func TestGenerator_RenderOutputPath(t *testing.T) {
 				Path:   "loader.js",
 				Output: "src/core/{{ .ProjectName }}-loader.js",
 			},
-			expected: "/home/user/dev/the-best-app/src/core/the-best-app-loader.js",
+			expected: "src/core/the-best-app-loader.js",
 		},
 		{
 			name:    "invalid output path template syntax",
@@ -161,6 +179,197 @@ func TestGenerator_RunShell(t *testing.T) {
 
 			if tc.isValid {
 				require.NoError(t, err)
+				return
+			}
+
+			require.Error(t, err)
+		})
+	}
+}
+
+func TestGenerator_ProcessFiles(t *testing.T) {
+	type testCase struct {
+		name               string
+		isValid            bool
+		files              []manifest.File
+		config             *projector.Config
+		expectedFilesExist []string
+	}
+
+	testCases := []testCase{
+		{
+			name:    "process files success",
+			isValid: true,
+			files: []manifest.File{
+				{
+					Path:   "main.go.tpl",
+					Output: "testdata/output/{{ .ProjectName }}/main.go",
+				},
+				{
+					Path:   "go.mod.tpl",
+					Output: "testdata/output/{{ .ProjectName }}/go.mod",
+				},
+			},
+			config: &projector.Config{
+				ProjectAuthor:  "tomakado",
+				ProjectName:    "my awesome app",
+				ProjectPackage: "github.com/tomakado/my-awesome-app",
+				Manifest:       &manifest.Manifest{Name: "awesome-app"},
+			},
+			expectedFilesExist: []string{
+				"testdata/output/my awesome app/main.go",
+				"testdata/output/my awesome app/go.mod",
+			},
+		},
+		{
+			name:    "one of input files does not exist",
+			isValid: false,
+			files: []manifest.File{
+				{
+					Path:   "main.go.tpl",
+					Output: "testdata/output/{{ .ProjectName }}/main.go",
+				},
+				{
+					Path:   "go.mod.tpl",
+					Output: "testdata/output/{{ .ProjectName }}/go.mod",
+				},
+				{
+					Path:   "Makefile",
+					Output: "testdata/output/{{ .ProjectName }}/Makefile",
+				},
+			},
+			config: &projector.Config{
+				ProjectAuthor:  "tomakado",
+				ProjectName:    "my awesome app",
+				ProjectPackage: "github.com/tomakado/my-awesome-app",
+				Manifest:       &manifest.Manifest{Name: "awesome-app"},
+			},
+		},
+		{
+			name:    "file contains invalid text/template syntax",
+			isValid: false,
+			files: []manifest.File{
+				{
+					Path:   "main.go.tpl",
+					Output: "testdata/output/{{ .ProjectName }}/main.go",
+				},
+				{
+					Path:   "go.mod_invalid.tpl",
+					Output: "testdata/output/{{ .ProjectName }}/go.mod",
+				},
+			},
+			config: &projector.Config{
+				ProjectAuthor:  "tomakado",
+				ProjectName:    "my awesome app",
+				ProjectPackage: "github.com/tomakado/my-awesome-app",
+				Manifest:       &manifest.Manifest{Name: "awesome-app"},
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				p         = manifest.NewRealFSProvider("testdata/")
+				generator = projector.NewGenerator(tc.config, p)
+			)
+
+			err := generator.ProcessFiles(tc.files)
+
+			if tc.isValid {
+				require.NoError(t, err)
+
+				for _, expected := range tc.expectedFilesExist {
+					assert.FileExists(t, expected)
+				}
+				return
+			}
+
+			require.Error(t, err)
+		})
+	}
+}
+
+func TestGenerator_Generate(t *testing.T) {
+	type testCase struct {
+		name          string
+		isValid       bool
+		config        *projector.Config
+		expectedFiles []struct {
+			path    string
+			content string
+		}
+	}
+
+	helloworldBytes, err := embeddedTestData.ReadFile("testdata/embed/go/hello-world/projector.toml")
+	require.NoError(t, err)
+
+	var helloworldManifest *manifest.Manifest
+	require.NoError(t, toml.Unmarshal(helloworldBytes, &helloworldManifest))
+
+	// obtain go version without patch and "go" prefix, e.g. "1.16"
+	var (
+		goVersionWithPatch = strings.TrimLeft(runtime.Version(), "go")
+		goVersion          = goVersionWithPatch[:len(goVersionWithPatch)-2]
+	)
+
+	testCases := []testCase{
+		{
+			name:    "go/hello-world generated successfully",
+			isValid: true,
+			config: &projector.Config{
+				ProjectName:      "projector-test",
+				ProjectPackage:   "projector-test",
+				ProjectAuthor:    "tomakado",
+				WorkingDirectory: "testdata/output/projector-test",
+				Manifest:         helloworldManifest,
+			},
+			expectedFiles: []struct {
+				path    string
+				content string
+			}{
+				{
+					path:    "testdata/output/projector-test/main.go",
+					content: "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, tomakado! This is projector-test!\")\n}\n",
+				},
+				{
+					path:    "testdata/output/projector-test/go.mod",
+					content: fmt.Sprintf("module projector-test\n\ngo %s\n", goVersion),
+				},
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			startWorkingDirectory, err := os.Getwd()
+			if err != nil {
+				require.NoError(t, err)
+			}
+
+			p := manifest.NewEmbedFSProvider(&embeddedTestData, "testdata/embed/")
+
+			err = projector.Generate(tc.config, p)
+
+			if tc.isValid {
+				require.NoError(t, err)
+
+				for _, expectedFile := range tc.expectedFiles {
+					ef := expectedFile
+					t.Run("project folder has expected state", func(t *testing.T) {
+						if err := os.Chdir(startWorkingDirectory); err != nil {
+							require.NoError(t, err)
+						}
+						require.FileExists(t, ef.path)
+
+						content, err := os.ReadFile(ef.path)
+						require.NoError(t, err)
+						require.Equal(t, ef.content, string(content))
+					})
+				}
+
 				return
 			}
 

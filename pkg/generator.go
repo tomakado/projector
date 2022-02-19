@@ -20,7 +20,7 @@ type provider interface {
 // Generate traverses template manifest passed inside config and executes listed steps with config passed as context.
 func Generate(config *Config, provider provider) error {
 	verbose.Println("passing config and provider to new instance of *projector.Generator")
-	verbose.Printf("provider = %T, config = %+v", config, provider)
+	verbose.Printf("provider = %T, config = %+v", provider, *config)
 
 	return NewGenerator(config, provider).Generate()
 }
@@ -150,7 +150,8 @@ func (g *Generator) RenderOutputPath(f manifest.File) (string, error) {
 		return "", fmt.Errorf("render output path template %q: %w", f.Output, err)
 	}
 
-	return filepath.Join(g.config.WorkingDirectory, outputPath.String()), nil
+	// return filepath.Join(g.config.WorkingDirectory, outputPath.String()), nil
+	return outputPath.String(), nil
 }
 
 // RunShell renders passed raw shell script template into actual shell script and then executes it.
