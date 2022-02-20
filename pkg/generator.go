@@ -150,7 +150,6 @@ func (g *Generator) RenderOutputPath(f manifest.File) (string, error) {
 		return "", fmt.Errorf("render output path template %q: %w", f.Output, err)
 	}
 
-	// return filepath.Join(g.config.WorkingDirectory, outputPath.String()), nil
 	return outputPath.String(), nil
 }
 
