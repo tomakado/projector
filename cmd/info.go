@@ -22,7 +22,7 @@ func runInfo(_ *cobra.Command, args []string) error {
 		p            = manifest.NewEmbedFSProvider(&resources, embedRoot)
 	)
 
-	m, err := loadManifest(p, filepath.Join(templateName, "projector.toml"))
+	m, err := manifest.Load(p, filepath.Join(templateName, "projector.toml"))
 	if err != nil {
 		return err
 	}

@@ -19,7 +19,8 @@ jobs:
 
       - name: Test
         run: |
-          go test -v -timeout=5m -covermode=count -coverprofile=$GITHUB_WORKSPACE/coverprofile.out ./...
+          go test -v -timeout=5m -covermode=count -coverprofile=$GITHUB_WORKSPACE/coverprofile_raw.out ./... && \
+          cat coverprofile_raw.out | grep -v pkg/create.go > coverprofile.out
 
       - name: Install golangci-lint and goveralls
         run: |

@@ -40,7 +40,7 @@ func runValidate(_ *cobra.Command, args []string) error {
 		p = manifest.NewRealFSProvider(filepath.Dir(manifestNameToValidate))
 	}
 
-	_, err := loadManifest(p, manifestNameToValidate)
+	_, err := manifest.Load(p, manifestNameToValidate)
 	if err != nil {
 		return fmt.Errorf("load manifest: %w", err)
 	}
