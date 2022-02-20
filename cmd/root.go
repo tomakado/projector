@@ -2,13 +2,10 @@ package cmd
 
 import (
 	"embed"
-	"fmt"
 	"os"
 
-	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 	"github.com/tomakado/projector/internal/pkg/verbose"
-	"github.com/tomakado/projector/pkg/manifest"
 )
 
 const embedRoot = "resources/templates/"
@@ -43,6 +40,7 @@ func init() {
 	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(infoCmd)
+	rootCmd.AddCommand(initCmd)
 }
 
 // Execute runs passed command and handles errors.
@@ -50,37 +48,4 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
-}
-
-func loadManifest(p provider, path string) (*manifest.Manifest, error) {
-	verbose.Printf("loading manifest %q", path)
-
-	manifestBytes, err := p.Get(path)
-	if err != nil {
-		return nil, err
-	}
-
-	manifest, err := parseManifest(manifestBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := manifest.Validate(); err != nil {
-		return nil, err
-	}
-
-	return manifest, nil
-}
-
-func parseManifest(src []byte) (*manifest.Manifest, error) {
-	verbose.Println("parsing manifest")
-
-	var manifest *manifest.Manifest
-	if err := toml.Unmarshal(src, &manifest); err != nil {
-		// TODO wrap custom typed error
-		verbose.Println("toml.Unmarshal returned error")
-		return nil, fmt.Errorf("parse manifest: %w", err)
-	}
-
-	return manifest, nil
 }

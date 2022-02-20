@@ -1,0 +1,18 @@
+name="go/hello-world"="hello world",
+author="tomakado"
+version="1.0.0"
+url="https://github.com/tomakado/projector"
+description="Basic program to get started with Go"
+
+[[steps]]
+name="init go module and git repository"
+shell="go mod init {{ .ProjectPackage }} && git init"
+	[[steps.files]]
+	path="gitignore"
+	output=".gitignore"
+	
+[[steps]]
+name="create project bootstrap"
+	[[steps.files]]
+	path="main.go.tpl"
+	output="main.go"

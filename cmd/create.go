@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os/user"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -50,34 +48,11 @@ func runCreate(_ *cobra.Command, args []string) error {
 
 	verbose.Printf("working directory = %q", cfg.WorkingDirectory)
 
-	manifest, err := loadManifest(p, filepath.Join(pathToManifest, "projector.toml"))
-	if err != nil {
-		return fmt.Errorf("load manifest: %w", err)
-	}
-
-	cfg.ManifestPath = pathToManifest
-	cfg.Manifest = manifest
-
-	if cfg.ProjectPackage == "" {
-		cfg.ProjectPackage = cfg.ProjectName
-
-		verbose.Printf(
-			"project package name is not provided, using project name as package name (%q)",
-			cfg.ProjectPackage,
-		)
-	}
-
-	if cfg.ProjectAuthor == "" {
-		u, err := user.Current()
-		if err != nil {
-			// TODO wrap custom typed error (if possible)
-			return fmt.Errorf("get current user: %w", err)
-		}
-
-		cfg.ProjectAuthor = u.Name
-
-		verbose.Printf("project author is not provided, using current OS user as author (%q)", cfg.ProjectAuthor)
-	}
-
-	return projector.Generate(&cfg, p)
+	return projector.Create(
+		projector.CreateConfig{
+			Config:         &cfg,
+			Provider:       p,
+			PathToManifest: pathToManifest,
+		},
+	)
 }
