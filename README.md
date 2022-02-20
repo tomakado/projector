@@ -199,6 +199,8 @@ _File_ in terms of Projector manifest is something like task of following kind:
 
 There are some features I'd like to implement in Projector:
 
+- [ ] Use multiple templates to generate single project (e.g., for having separate templates for Dockerfile, frontend, “service” level, etc.)
+- [ ] Optional steps
 - [ ] Nice animated output of current step
 - [ ] User-friendly error messages
 - [ ] Import third-party templates from GitHub
