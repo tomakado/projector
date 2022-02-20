@@ -14,6 +14,7 @@ Currently Projector is in active development stage, therefore breaking changes m
 * Single binary, no extra dependencies
 * Builtin templates that allow you to start quickly
 * Simple template manifest format
+* Custom templates
 
 # Installation
 
@@ -197,7 +198,6 @@ _File_ in terms of Projector manifest is something like task of following kind:
 
 There are some features I'd like to implement in Projector:
 
-- [ ] Template for templates!
 - [ ] Nice animated output of current step
 - [ ] User-friendly error messages
 - [ ] Import third-party templates from GitHub
