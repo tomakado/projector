@@ -43,9 +43,10 @@ func collectManifests(root string) ([]string, error) {
 	for _, entry := range dirs {
 		if !entry.IsDir() {
 			if entry.Name() == "projector.toml" {
-				manifests = append(manifests, strings.TrimLeft(root, embedRoot)) //nolint:staticcheck
+				manifestName := strings.TrimPrefix(root, embedRoot)
+				manifests = append(manifests, manifestName) //nolint:staticcheck
 
-				verbose.Printf("projector.toml detected, so registered %q as manifest", root)
+				verbose.Printf("projector.toml detected, so registered %q as manifest", manifestName)
 			}
 
 			continue

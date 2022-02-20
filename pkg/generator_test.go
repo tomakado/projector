@@ -311,7 +311,7 @@ func TestGenerator_Generate(t *testing.T) {
 	// obtain go version without patch and "go" prefix, e.g. "1.16"
 	var (
 		goVersionWithPatch = strings.TrimLeft(runtime.Version(), "go")
-		goVersion          = goVersionWithPatch[:len(goVersionWithPatch)-2]
+		goVersion          = strings.Split(goVersionWithPatch, ".")[1]
 	)
 
 	testCases := []testCase{
@@ -335,7 +335,7 @@ func TestGenerator_Generate(t *testing.T) {
 				},
 				{
 					path:    "testdata/output/projector-test/go.mod",
-					content: fmt.Sprintf("module projector-test\n\ngo %s\n", goVersion),
+					content: fmt.Sprintf("module projector-test\n\ngo 1.%s\n", goVersion),
 				},
 			},
 		},
