@@ -1,3 +1,4 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/tomakado/projector.svg)](https://pkg.go.dev/github.com/tomakado/projector)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tomakado/projector)](https://goreportcard.com/report/github.com/tomakado/projector)
 [![Coverage Status](https://coveralls.io/repos/github/tomakado/projector/badge.svg?branch=master)](https://coveralls.io/github/tomakado/projector?branch=master)
 ![License](https://img.shields.io/badge/license-MIT-green)
