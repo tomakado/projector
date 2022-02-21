@@ -10,9 +10,10 @@ import (
 )
 
 type CreateConfig struct {
-	Config         *Config
-	Provider       provider
-	PathToManifest string
+	Config          *Config
+	Provider        provider
+	IncludeAllSteps bool
+	PathToManifest  string
 }
 
 func Create(cfg CreateConfig) error {
@@ -45,6 +46,17 @@ func Create(cfg CreateConfig) error {
 			"project author is not provided, using current OS user as author (%q)",
 			cfg.Config.ProjectAuthor,
 		)
+	}
+
+	if cfg.IncludeAllSteps {
+		var optionalSteps []string
+		for _, step := range cfg.Config.Manifest.Steps {
+			if step.IsOptional {
+				stepToAppend := step.Name
+				optionalSteps = append(optionalSteps, stepToAppend)
+			}
+		}
+		cfg.Config.OptionalSteps = optionalSteps
 	}
 
 	return Generate(cfg.Config, cfg.Provider)

@@ -9,5 +9,6 @@ type Config struct {
 	ProjectName      string
 	ProjectPackage   string
 	Manifest         *manifest.Manifest
+	OptionalSteps    []string
 	ManifestPath     string
 }

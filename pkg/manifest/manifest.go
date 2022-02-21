@@ -17,8 +17,7 @@ type Manifest struct {
 	URL         string `toml:"url,omitempty"`
 	Version     string `toml:"version"`
 	Description string `toml:"description"`
-
-	Steps []Step `toml:"steps"`
+	Steps       Steps  `toml:"steps"`
 }
 
 func (m Manifest) Validate() error {
@@ -51,9 +50,10 @@ func (m Manifest) Validate() error {
 
 // Step contains template files to output mapping and/or shell script to execute.
 type Step struct {
-	Name  string `toml:"name"`
-	Files []File `toml:"files"`
-	Shell string `toml:"shell"`
+	Name       string `toml:"name"`
+	IsOptional bool   `toml:"optional"`
+	Files      []File `toml:"files"`
+	Shell      string `toml:"shell"`
 }
 
 func (s Step) Validate() error {
@@ -126,4 +126,16 @@ func validateOutputSyntax(v interface{}) error {
 	}
 
 	return nil
+}
+
+type Steps []Step
+
+func (s Steps) Get(name string) (*Step, error) {
+	for _, step := range s {
+		if step.Name == name {
+			return &step, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unknown step %q", name)
 }

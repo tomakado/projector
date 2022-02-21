@@ -16,8 +16,9 @@ var (
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  runCreate,
 	}
-	cfg            projector.Config
-	pathToManifest string
+	cfg             projector.Config
+	pathToManifest  string
+	includeAllSteps bool
 )
 
 func init() {
@@ -31,6 +32,8 @@ func init() {
 	)
 	createCmd.Flags().StringVarP(&cfg.ProjectAuthor, "author", "a", "", "project author (default current OS user)")
 	createCmd.Flags().StringVarP(&pathToManifest, "manifest", "m", "", "path to custom template manifest")
+	createCmd.Flags().StringSliceVarP(&cfg.OptionalSteps, "include", "i", []string{}, "optional steps to include")
+	createCmd.Flags().BoolVar(&includeAllSteps, "all", false, "include all optional steps (overrides --include)")
 }
 
 func runCreate(_ *cobra.Command, args []string) error {
@@ -50,9 +53,10 @@ func runCreate(_ *cobra.Command, args []string) error {
 
 	return projector.Create(
 		projector.CreateConfig{
-			Config:         &cfg,
-			Provider:       p,
-			PathToManifest: pathToManifest,
+			Config:          &cfg,
+			Provider:        p,
+			PathToManifest:  pathToManifest,
+			IncludeAllSteps: includeAllSteps,
 		},
 	)
 }

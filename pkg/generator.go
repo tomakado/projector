@@ -29,17 +29,25 @@ func Generate(config *Config, provider provider) error {
 type Generator struct {
 	config   *Config
 	provider provider
+
+	// optionalSteps is string set with included optional step names
+	optionalSteps map[string]struct{}
 }
 
 func NewGenerator(config *Config, provider provider) *Generator {
 	return &Generator{
-		config:   config,
-		provider: provider,
+		config:        config,
+		provider:      provider,
+		optionalSteps: map[string]struct{}{},
 	}
 }
 
 // Generate traverses steps in project template manifest and performs actions defined inside each of them.
 func (g *Generator) Generate() error {
+	if err := g.makeOptionalStepSet(g.config.OptionalSteps); err != nil {
+		return fmt.Errorf("makeOptionalStepSet: %w", err)
+	}
+
 	verbose.Printf("initializing working directory %q", g.config.WorkingDirectory)
 	if err := os.MkdirAll(g.config.WorkingDirectory, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to mkdir %q: %w", g.config.WorkingDirectory, err)
@@ -53,6 +61,14 @@ func (g *Generator) Generate() error {
 	verbose.Println("traversing manifest steps")
 	for i, step := range g.config.Manifest.Steps {
 		verbose.Printf("step %q, %d of %d", step.Name, (i + 1), len(g.config.Manifest.Steps))
+
+		if step.IsOptional {
+			if _, ok := g.optionalSteps[step.Name]; !ok {
+				verbose.Printf("step %q is optional and not included to config, skipping", step.Name)
+				continue
+			}
+			verbose.Printf("step %q is optional but included to config", step.Name)
+		}
 
 		if step.Files != nil {
 			if err := g.ProcessFiles(step.Files); err != nil {
@@ -176,5 +192,21 @@ func (g *Generator) RunShell(rawSh string) error {
 		return fmt.Errorf("exec shell script: %w", err)
 	}
 
+	return nil
+}
+
+func (g *Generator) makeOptionalStepSet(steps []string) error {
+	verbose.Printf("resolving optional steps: %v", steps)
+	for _, stepName := range steps {
+		if _, err := g.config.Manifest.Steps.Get(stepName); err != nil {
+			return fmt.Errorf("getStepByName: %w", err)
+		}
+
+		if _, ok := g.optionalSteps[stepName]; !ok {
+			g.optionalSteps[stepName] = struct{}{}
+		}
+	}
+
+	verbose.Printf("built optional step set: %v", g.optionalSteps)
 	return nil
 }
