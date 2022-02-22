@@ -50,6 +50,7 @@ Available Commands:
   init        Create template manifest in current directory (like `create projector` command)
   list        List builtin and cached templates
   validate    Validate manifest without performing actions (dry run)
+  version     Display projector version
 
 Flags:
   -h, --help      help for projector
@@ -265,7 +266,6 @@ There are some features I'd like to implement in Projector:
 - [ ] Template caching
 - [ ] List local third-party cached templates
 - [ ] Support for file masks on input files declaration
-- [ ] `version` command (Go 1.18+)
 
 # Contribution
 
