@@ -7,12 +7,29 @@ description="Basic program to get started with Go"
 [[steps]]
 name="init go module and git repository"
 shell="go mod init {{ .ProjectPackage }} && git init"
-	[[steps.files]]
-	path="gitignore"
-	output=".gitignore"
+		[[steps.files]]
+		path="gitignore"
+		output=".gitignore"
 	
 [[steps]]
 name="create project bootstrap"
-	[[steps.files]]
-	path="main.go.tpl"
-	output="main.go"
+		[[steps.files]]
+		path="main.go.tpl"
+		output="main.go"
+
+[[steps]]
+name="makefile"
+optional=true
+		[[steps.files]]
+		path="Makefile"
+		output="Makefile"
+
+[[steps]]
+name="date"
+optional=true
+shell="date > date.txt"
+
+[[steps]]
+name="license"
+optional=true
+shell="echo \"Do whatever you want!\" > LICENSE.txt"
