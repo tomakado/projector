@@ -8,6 +8,11 @@ builds:
       - linux
       - windows
       - darwin
+    ldflags:
+      - -X github.com/tomakado/projector/internal/build.version={{.Version}}
+      - -X github.com/tomakado/projector/internal/build.time={{.Date}}
+      - -X github.com/tomakado/projector/internal/build.branch={{.Branch}}
+      - -X github.com/tomakado/projector/internal/build.commit={{.FullCommit}}
 archives:
   - name_template: "{{.ProjectName}}_{{.Tag}}_{{.Os}}_{{.Arch}}"
     replacements:
