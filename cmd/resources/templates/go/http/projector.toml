@@ -4,21 +4,32 @@ version="1.0.0"
 url="https://github.com/tomakado/projector"
 
 [[steps]]
-name="init go module and git repository"
+name="init"
 shell="go mod init {{ .ProjectPackage }} && git init"
-	[[steps.files]]
-	path="gitignore"
-	output=".gitignore"
+		[[steps.files]]
+		path="gitignore"
+		output=".gitignore"
 	
 [[steps]]
-name="install chi router"
+name="chi"
 shell="go get github.com/go-chi/chi/v5"
+		[[steps.files]]
+		path="cmd/main_chi.go.tpl"
+		output="cmd/main.go"
 
 [[steps]]
-name="create basic http server"
-	[[steps.files]]
-	path="cmd/main.go.tpl"
-	output="cmd/main.go"
-	[[steps.files]]
-	path="Makefile"
-	output="Makefile"
+name="linter"
+optional=true
+shell="go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
+
+[[steps]]
+name="goreleaser"
+optional=true
+shell="go install github.com/goreleaser/goreleaser@latest && goreleaser init"
+
+[[steps]]
+name="makefile"
+optional=true
+		[[steps.files]]
+		path="Makefile"
+		output="Makefile"

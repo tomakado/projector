@@ -248,3 +248,63 @@ func TestManifest_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestSteps_Get(t *testing.T) {
+	type testCase struct {
+		name     string
+		isValid  bool
+		stepName string
+		expected manifest.Step
+	}
+
+	var (
+		steps = manifest.Steps{
+			{
+				Name:  "init",
+				Shell: "git init",
+			},
+			{
+				Name:       "makefile",
+				IsOptional: true,
+				Files: []manifest.File{
+					{
+						Path:   "Makefile",
+						Output: "Makefile",
+					},
+				},
+			},
+		}
+		testCases = []testCase{
+			{
+				name:     "Get returns existing step by name",
+				isValid:  true,
+				stepName: "init",
+				expected: manifest.Step{
+					Name:  "init",
+					Shell: "git init",
+				},
+			},
+			{
+				name:     "Get returns error for non-existing step",
+				isValid:  false,
+				stepName: "linter",
+			},
+		}
+	)
+
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := steps.Get(tc.stepName)
+
+			if tc.isValid {
+				require.NoError(t, err)
+				require.Equal(t, &tc.expected, actual)
+				return
+			}
+
+			require.Error(t, err)
+			require.Nil(t, actual)
+		})
+	}
+}

@@ -300,6 +300,7 @@ func TestGenerator_Generate(t *testing.T) {
 			path    string
 			content string
 		}
+		expectedFilesDontExist []string
 	}
 
 	helloworldBytes, err := embeddedTestData.ReadFile("testdata/embed/go/hello-world/projector.toml")
@@ -322,7 +323,7 @@ func TestGenerator_Generate(t *testing.T) {
 				ProjectName:      "projector-test",
 				ProjectPackage:   "projector-test",
 				ProjectAuthor:    "tomakado",
-				WorkingDirectory: "testdata/output/projector-test",
+				WorkingDirectory: "testdata/output/projector-test-1",
 				Manifest:         helloworldManifest,
 			},
 			expectedFiles: []struct {
@@ -330,12 +331,83 @@ func TestGenerator_Generate(t *testing.T) {
 				content string
 			}{
 				{
-					path:    "testdata/output/projector-test/main.go",
+					path:    "testdata/output/projector-test-1/main.go",
 					content: "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, tomakado! This is projector-test!\")\n}\n",
 				},
 				{
-					path:    "testdata/output/projector-test/go.mod",
+					path:    "testdata/output/projector-test-1/go.mod",
 					content: fmt.Sprintf("module projector-test\n\ngo 1.%s\n", goVersion),
+				},
+			},
+		},
+		{
+			name:    "included optional steps are executed",
+			isValid: true,
+			config: &projector.Config{
+				ProjectName:      "projector-test",
+				ProjectPackage:   "projector-test",
+				ProjectAuthor:    "tomakado",
+				WorkingDirectory: "testdata/output/projector-test-2",
+				Manifest:         helloworldManifest,
+				OptionalSteps:    []string{"makefile", "license"},
+			},
+			expectedFiles: []struct {
+				path    string
+				content string
+			}{
+				{
+					path:    "testdata/output/projector-test-2/main.go",
+					content: "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, tomakado! This is projector-test!\")\n}\n",
+				},
+				{
+					path:    "testdata/output/projector-test-2/go.mod",
+					content: fmt.Sprintf("module projector-test\n\ngo 1.%s\n", goVersion),
+				},
+				{
+					path:    "testdata/output/projector-test-2/Makefile",
+					content: "run:\n\tgo run main.go\n",
+				},
+				{
+					path:    "testdata/output/projector-test-2/LICENSE.txt",
+					content: "Do whatever you want!\n",
+				},
+			},
+			expectedFilesDontExist: []string{"testdata/output/projector-test-2/date.txt"},
+		},
+		{
+			name:    "Generate returns error if unknown step passed",
+			isValid: false,
+			config: &projector.Config{
+				ProjectName:      "projector-test",
+				ProjectPackage:   "projector-test",
+				ProjectAuthor:    "tomakado",
+				WorkingDirectory: "testdata/output/projector-test-3",
+				Manifest:         helloworldManifest,
+				OptionalSteps:    []string{"not-existing-step-1", "not-existing-step-2", "not-existing-step-3"},
+			},
+		},
+		{
+			name:    "Generate returns error if RenderOutputPath returns error",
+			isValid: false,
+			config: &projector.Config{
+				ProjectName:      "projector-test",
+				ProjectPackage:   "projector-test",
+				ProjectAuthor:    "tomakado",
+				WorkingDirectory: "testdata/output/projector-test-4",
+				Manifest: &manifest.Manifest{
+					Name:   "invalid-template",
+					Author: "tomakado",
+					Steps: []manifest.Step{
+						{
+							Name: "copy files",
+							Files: []manifest.File{
+								{
+									Path:   "main.go.tpl",
+									Output: "{{ .ProjectName }/main.go",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -367,6 +439,16 @@ func TestGenerator_Generate(t *testing.T) {
 						content, err := os.ReadFile(ef.path)
 						require.NoError(t, err)
 						require.Equal(t, ef.content, string(content))
+					})
+				}
+
+				for _, expectedFile := range tc.expectedFilesDontExist {
+					ef := expectedFile
+					t.Run("file %q does not exist", func(t *testing.T) {
+						if err := os.Chdir(startWorkingDirectory); err != nil {
+							require.NoError(t, err)
+						}
+						require.NoFileExists(t, ef)
 					})
 				}
 

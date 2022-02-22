@@ -1,7 +1,4 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/tomakado/projector.svg)](https://pkg.go.dev/github.com/tomakado/projector)
-[![Go Report Card](https://goreportcard.com/badge/github.com/tomakado/projector)](https://goreportcard.com/report/github.com/tomakado/projector)
-[![Coverage Status](https://coveralls.io/repos/github/tomakado/projector/badge.svg?branch=master)](https://coveralls.io/github/tomakado/projector?branch=master)
-![License](https://img.shields.io/badge/license-MIT-green)
+
 
 <img src="doc/logo.png" align="right" /> 
 
@@ -10,12 +7,20 @@ Projector has some builtin templates, but you also can use your custom templates
 
 Currently Projector is in active development stage, therefore breaking changes may occur.
 
-# Features
-
 * Single binary, no extra dependencies
 * Builtin templates that allow you to start quickly
 * Simple template manifest format
 * Custom templates
+* Optional steps for flexibility
+---
+<div align="center">
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/tomakado/projector.svg)](https://pkg.go.dev/github.com/tomakado/projector)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tomakado/projector)](https://goreportcard.com/report/github.com/tomakado/projector)
+[![Coverage Status](https://coveralls.io/repos/github/tomakado/projector/badge.svg?branch=master)](https://coveralls.io/github/tomakado/projector?branch=master)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+</div>
 
 # Installation
 
@@ -27,11 +32,10 @@ There are two ways to get Projector right now:
 
 # Usage
 
-## Projector CLI
 Get general usage help with `-h` or `--help` flags:
 ```
-❯ projector -h         
-A flexible, language and framework agnostic tool that allows you to generate projects from templates. 
+❯ projector -h
+A flexible, language and framework agnostic tool that allows you to generate projects from templates.
 Projector has some builtin templates, but you can use your custom templates or import third-party templates
 from GitHub.
 
@@ -43,6 +47,7 @@ Available Commands:
   create      Create project using specified template
   help        Help about any command
   info        Show meta information about template
+  init        Create template manifest in current directory (like `create projector` command)
   list        List builtin and cached templates
   validate    Validate manifest without performing actions (dry run)
 
@@ -53,6 +58,7 @@ Flags:
 Use "projector [command] --help" for more information about a command.
 ```
 
+## Create project
 Create project with `create` command:
 ```
 projector create go/hello-world --author "tomakado <hi@ildarkarymov.ru>" && \
@@ -62,6 +68,26 @@ projector create go/hello-world --author "tomakado <hi@ildarkarymov.ru>" && \
 ```
 where `go/hello-world` is template you want to use. You also can use custom manifest file by passing it with `--manifest` or `-m` flags.
 
+## Optional steps
+Template may have optional steps omitted by default. Use `-i` or `--i` flags to include them:
+```
+projector create go/hello-world --author "tomakado <hi@ildarkarymov.ru>" && \
+								--name "my-awesome-app" && \
+								--package "github.com/tomakado/go-helloworld" && \
+								--include=makefile,dockerfile
+							    ./hello-world/
+```
+
+Use `--all` flag to include all optional steps:
+```
+projector create go/hello-world --author "tomakado <hi@ildarkarymov.ru>" && \
+								--name "my-awesome-app" && \
+								--package "github.com/tomakado/go-helloworld" && \
+								--all
+							    ./hello-world/
+```
+
+## Listing available templates
 List all available locally templates with `projector list`:
 ```
 ❯ projector list
@@ -69,6 +95,7 @@ go/hello-world
 go/http
 ```
 
+## Getting info about template
 Get a bit more info about concrete template with `projector info [template]`:
 ```
 ❯ projector info go/hello-world
@@ -77,12 +104,14 @@ URL: https://github.com/tomakado/projector
 Description: Basic program to get started with Go
 ```
 
+## Template validation
 Validate custom manifest file with `projector validate --manifest=[path-to-custom-manifest-file]`:
 ```
 ❯ projector validate -m projector.toml
 Manifest is valid ✅
 ```
 
+## Template debugging
 Debug your template with `--verbose` flag:
 ```
 ❯ projector create go/hello-world -a "tomakado <hi@ildarkarymov.ru>" -n "my-awesome-app" -p "github.com/tomakado/go-helloworld" ./hello-world --verbose
@@ -124,6 +153,31 @@ Debug your template with `--verbose` flag:
 2022/02/19 18:22:32 rendering output path template "main.go"
 2022/02/19 18:22:32 mkdir .
 2022/02/19 18:22:32 writing rendered file to "main.go"
+```
+
+## Сustom template
+
+You can just create file with name `projector.toml` and start filling, but Projector has template for... templates:
+```
+projector create projector --name="projector-demo" ./projector-demo
+```
+
+that generates file with following content:
+```toml
+name="projector-demo"
+author="tomakado"
+version="snapshot"
+url="https://github.com/tomakado/projector-demo"
+description="Enter your template description here"
+
+[[steps]]
+name="hello world"
+shell="echo \"hello, world!\""
+```
+
+Also there is shortcut for it (you have to be inside target directory):
+```
+projector init
 ```
 
 ## Manifest
@@ -168,11 +222,12 @@ The first, top-level section containing fields `name`, `author`, `version`, `url
 #### `step`
 _Step_ is self-sufficient action performed by Projector to generate project. Projector “executes” steps sequentially, one by one. Inside `shell` field `text/template` syntax is supported, so you can use values exposed to [Template Context](#template-context) inside shell script.
 
-| Field   | Description                                                                                                                                   |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`  | Name of step. Required.                                                                                                                       |
-| `files` | Array of files to generate. See [`file`](#file) for more info. Required if `shell` is not set.                                                |
-| `shell` | Shell script to execute. `text/template` supported (see [Template Context](#template-context) for more info). Required if `files` is not set. |
+| Field      | Description                                                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`     | Name of step. Required.                                                                                                                       |
+| `optional` | Defines if step is optional. If `true` step will be omitted if not included via `-i` flag. Optional. Default: `false`.                        |
+| `files`    | Array of files to generate. See [`file`](#file) for more info. Required if `shell` is not set.                                                |
+| `shell`    | Shell script to execute. `text/template` supported (see [Template Context](#template-context) for more info). Required if `files` is not set. |
 
 #### `file`
 _File_ in terms of Projector manifest is something like task of following kind:
@@ -195,12 +250,13 @@ _File_ in terms of Projector manifest is something like task of following kind:
 | `ProjectName`      | Name of project.                                                                        |
 | `ProjectPackage`   | Package name for project. E.g. in Go it would something like `github.com/owner/module`. |
 | `Manifest`         | Reference to manifest. See [Manifest](#manifest) for info.                              |
+| `OptionalSteps`    | Slice of optional step names.                                                           |
+
 # Backlog
 
 There are some features I'd like to implement in Projector:
 
 - [ ] Use multiple templates to generate single project (e.g., for having separate templates for Dockerfile, frontend, “service” level, etc.)
-- [ ] Optional steps
 - [ ] Nice animated output of current step
 - [ ] User-friendly error messages
 - [ ] Import third-party templates from GitHub
