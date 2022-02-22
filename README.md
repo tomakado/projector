@@ -225,7 +225,7 @@ _Step_ is self-sufficient action performed by Projector to generate project. Pro
 | Field      | Description                                                                                                                                   |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`     | Name of step. Required.                                                                                                                       |
-| `optional` | Defines if step is optional. If `true` step will be omitted if not included via `-i` flag. Optional. Default: `false`.k                                                                                                                                              |
+| `optional` | Defines if step is optional. If `true` step will be omitted if not included via `-i` flag. Optional. Default: `false`.                        |
 | `files`    | Array of files to generate. See [`file`](#file) for more info. Required if `shell` is not set.                                                |
 | `shell`    | Shell script to execute. `text/template` supported (see [Template Context](#template-context) for more info). Required if `files` is not set. |
 
