@@ -1,0 +1,12 @@
+name="projector"
+author="tomakado"
+version="1.0.0"
+url="https://github.com/tomakado/projector"
+description="Basic template manifest for Projector"
+
+[[steps]]
+name="init projector template"
+		[[steps.files]]
+		path="projector.toml.tpl"
+		output="projector.toml"
+

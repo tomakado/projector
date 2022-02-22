@@ -1,42 +1,22 @@
-package cmd
+package projector
 
 import (
+	"embed"
 	"fmt"
 	"path"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"github.com/tomakado/projector/internal/pkg/verbose"
-	projector "github.com/tomakado/projector/pkg"
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List builtin and cached templates",
-	RunE:  runList,
-}
-
-func runList(_ *cobra.Command, _ []string) error {
-	verbose.Println("traversing templates tree")
-
-	manifests, err := projector.CollectEmbeddedManifests(&resources, embedRoot, ".")
-	if err != nil {
-		return fmt.Errorf("collect manifests: %w", err)
-	}
-
-	for _, m := range manifests {
-		fmt.Println(m)
-	}
-
-	return nil
-}
-
-func collectManifests(root string) ([]string, error) {
+func CollectEmbeddedManifests(fs *embed.FS, embedRoot, root string) ([]string, error) {
+	// TODO Make this func universal and use some kind of registry of manifests.
+	// Making it after adding support for GitHub as manifest source is the best moment.
 	verbose.Printf("reading %q", root)
 
 	var manifests []string
 
-	dirs, err := resources.ReadDir(root)
+	dirs, err := fs.ReadDir(root)
 	if err != nil {
 		return nil, fmt.Errorf("read dir %q: %w", root, err)
 	}
@@ -53,7 +33,7 @@ func collectManifests(root string) ([]string, error) {
 			continue
 		}
 
-		children, err := collectManifests(path.Join(root, entry.Name()))
+		children, err := CollectEmbeddedManifests(fs, embedRoot, path.Join(root, entry.Name()))
 		if err != nil {
 			return nil, err
 		}
